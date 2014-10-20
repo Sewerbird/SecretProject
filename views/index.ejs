@@ -5,10 +5,11 @@
     <script src="js/bundle.js"></script>
   </head>
   <body>
-    <h1>FOO</h1>
-    <p>FOO</p>
+    <h1>Secret Project</h1>
+    <canvas id="screen"></canvas>
     <script>
-    	Main.start()
+    	var myGame = new Main({viewX:1200,viewY:600,viewID:"screen"})
+      myGame.start()
     </script>
   </body>
 </html>
