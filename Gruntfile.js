@@ -15,7 +15,8 @@ module.exports = function(grunt) {
         },
         options: {
           browserifyOptions: {
-            fullPaths: false
+            fullPaths: false,
+            debug : true
           }
         }
       }

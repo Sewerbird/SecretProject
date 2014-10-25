@@ -1,42 +1,26 @@
 var _ = require("lodash");
+var Camera = require("./camera.js");
 var PIXI = require("./lib/pixi.js");
 
 Main = function(options){
 	var self = this;
-	if(!options)options = {}
-	self.renderer = PIXI.autoDetectRenderer(
-		options.viewX?options.viewX:800,
-		options.viewY?options.viewY:600,
-		document.getElementById(options.viewID?options.viewID:"screen"));
 
-	//Setup game view
-	self.stage = new PIXI.Stage(0x888FFF);
-	self.gameScreen = new PIXI.DisplayObjectContainer()
-	self.gameScreen.scale = {x:0.2,y:0.2}
-	self.gameScreen.interactive = true;
-	self.stage.addChild(self.gameScreen);
-	self.camera = new Camera(options.viewID?options.viewID:"screen",self.gameScreen, self);
+	//Create Camera
+	self.camera = new Camera(options.viewID?options.viewID:"screen", self);
 
 	//Load
 	self.gameObjects = [];
 	self.loadAssets();
-
-	//Animate
-	requestAnimFrame(animate);
-	function animate(){
-		self.camera.update();
-		requestAnimFrame(animate);
-		_.forEach(self.gameObjects,function(child){
-			if(child && child.draw)
-				child.draw();
-		})
-		self.renderer.render(self.stage);
-	};
+}
+Main.prototype.queryGameObjects = function(worldCoord){
+	var self = this;
+	return self.gameObjects;
 }
 Main.prototype.start = function(){
 	var self = this;
 	console.log("Main Started ");
 	self.genRandomMap();
+	self.camera.setViewState(self)//TODO: plug in an actual viewState here
 }
 Main.prototype.genRandomMap = function(){
 	var self = this;
@@ -101,56 +85,7 @@ Main.prototype.loadAssets = function(){
 	})
 }
 
-//Morphs attributes of a DisplayObjectContainer in response to user mouse movements to pan/zoom the visible stage
-Camera = function(elementID, gameScreen, main){
-	var self = this;
-	self.main = main;
-	self.selected = undefined;
-	self.viewSize = {x:1200,y:600}
-	self.pan = {x:0,y:0,minPanX:undefined,minPanY:undefined,maxPanX:undefined,maxPanY:undefined}
-	self.zoom = 0.2
-	self.maxZoom = 1.0
-	self.minZoom = 0.05
-	self.onDown = {x:undefined, y:undefined}
-	self.worldScreen = gameScreen;
-	document.getElementById(elementID).addEventListener('mousewheel',function(e){
-		e.preventDefault();
-		var diff = 0.05;
-		var dir = (e.wheelDeltaY?(e.wheelDeltaY<0?-diff:diff):undefined)
-		self.doZoom(dir);
-	}, false)
-	document.getElementById(elementID).addEventListener('mousedown',function(e){
-		self.onDown.x = e.clientX
-		self.onDown.y = e.clientY
-	})
-	document.getElementById(elementID).addEventListener('mousemove',function(e){
-		if(self.onDown.x === undefined) return;
-		self.doPan(self.onDown.x - e.clientX,self.onDown.y-e.clientY)
-		self.onDown.x = e.clientX
-		self.onDown.y = e.clientY
-	})
-	document.getElementById(elementID).addEventListener('mouseup',function(e){
-		self.onDown = {x:undefined, y:undefined}
-	})
-}
-Camera.prototype.doZoom = function(dZ){
-	var self = this;
-	if(!_.isFinite(dZ)) return;
-	self.zoom += dZ;
-	self.zoom = Math.max(Math.min(self.maxZoom,self.zoom),self.minZoom)
-	console.log(self.zoom);
 
-}
-Camera.prototype.doPan = function(dX,dY){
-	var self = this;
-	self.pan.x -= dX;
-	self.pan.y -= dY;
-}
-Camera.prototype.update = function(){
-	var self = this;
-	self.worldScreen.position = self.pan
-	self.worldScreen.scale = {x:self.zoom,y:self.zoom}
-}
 
 ////////////////////////
 //Game Object Attributes
@@ -176,12 +111,20 @@ Drawable = function(settings){
 	return function(gameObject){
 		if(!gameObject.isLocatable) throw "Drawable must be Locatable first";
 		gameObject.isDrawable = true;
-		gameObject.draw = function(){
-			gameObject.sprite.position = gameObject.getWorldCoord()
-		}
 		gameObject.sprite = new PIXI.Sprite(settings.texture);
 		_.extend(gameObject.sprite, settings.sprite);
-		myGame.gameScreen.addChild(gameObject.sprite)
+
+		gameObject.instate = function(drawTo){
+			if(gameObject.isDrawableInstated || !drawTo)
+				return;
+			drawTo.addChild(gameObject.sprite)
+			gameObject.isDrawableInstated = true;
+		}
+		gameObject.draw = function(drawTo){
+			if(!gameObject.isDrawableInstated) 
+				gameObject.instate(drawTo)
+			gameObject.sprite.position = gameObject.getWorldCoord()
+		}
 		return gameObject
 	}
 }
@@ -211,7 +154,6 @@ Selectable = function(settings){
 			else
 			{
 				//select
-				console.log("WHAM!");
 				gameObject.sprite.filters = [filterSelected];
 				gameObject.onSelect(ev);
 				gameObject.isSelected = true;
