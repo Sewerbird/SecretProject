@@ -77,4 +77,15 @@ ModuleLibrary.prototype.Selectable = function(settings){
 	}
 }
 
+ModuleLibrary.prototype.Debuggable = function(settings){
+	return function(gameObject){
+		if(!gameObject.isDrawable) throw "Debuggable must be Drawable first";
+		gameObject.debugText = new PIXI.Text("Test",{font:"120px Arial", fill:"cyan"})
+		gameObject.sprite.addChild(gameObject.debugText)
+		gameObject.setDebugText = function(text){
+			gameObject.debugText.setText(text)
+		}
+		return gameObject;
+	}
+}
 module.exports = ModuleLibrary;

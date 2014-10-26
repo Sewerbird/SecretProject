@@ -8,7 +8,7 @@ var Camera = function(canvasID){
 	self.selected = undefined;
 	self.viewSize = {x:1200,y:600}
 	self.pan = {x:150,y:150,minPanX:undefined,minPanY:undefined,maxPanX:undefined,maxPanY:undefined}
-	self.zoom = 0.2
+	self.zoom = 0.05
 	self.maxZoom = 1.0
 	self.minZoom = 0.05
 	self.onDown = {x:undefined, y:undefined}
@@ -18,7 +18,7 @@ var Camera = function(canvasID){
 	self.viewSize.x,
 	self.viewSize.y,
 	document.getElementById(self.canvasID));
-	self.stage = new PIXI.Stage(0x888FFF);
+	self.stage = new PIXI.Stage(0xDDDFFF);
 
 
 	document.getElementById(canvasID).addEventListener('mousewheel',function(e){

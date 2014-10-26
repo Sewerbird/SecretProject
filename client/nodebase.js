@@ -1,5 +1,6 @@
 //Nodebase.js
 var _ = require("lodash");
+var Graph = require("graphlib").Graph;
 var Location = require("./nodelocation.js");
 var WorldGen = require("./worldgen.js");
 var WorldNode = require("./worldnode.js");
@@ -10,11 +11,11 @@ var GameObject = require("./gameobject.js");
 
 var Nodebase = function(){
 	var self = this;
-
+	self.instant = (new Date()).getTime()
 	self.nodes = []
 	self.links = []
-	self.workingSet = [];
-
+	self.workingSet = new Graph({directed: true});
+	self.loadAssets();
 	self.generator = new WorldGen();
 	self.generator.random(self);
 	self.loadWorkingSet("targetUID");
@@ -26,25 +27,77 @@ var Nodebase = function(){
  */
 Nodebase.prototype.loadWorkingSet = function(){
 	var self = this
-	self.workingSet = _.map(nodes, function(node){
-		return GameObject(node,[
+	_.forEach(self.nodes, function(node,k){
+		self.nodes[k] = GameObject(node,[
 			ModLib.Locatable({
-				position:{x:a.transform.x,y:a.transform.y}
+				position:{x:node.transform.x,y:node.transform.y}
 			}),
 			ModLib.Drawable({
-				texture:self.assetMap[a.nodeRef],
+				texture:self.assetMap[node.nodeRef],
 				sprite:{
 					anchor:{x:0.5,y:0.5}
 				}
 			}),
 			ModLib.Selectable({
 
+			}),
+			ModLib.Debuggable({
+
 			})
 		])
 	})
 }
-Nodebase.prototype.layoutWorkingSet = function(){
-	//TODO: Root is assumed to be first element
+/*
+	Accumulate and apply transforms for the working set wrt the camera node
+ */
+Nodebase.prototype.layoutWorkingSet = function(targetNode,depth){
+	var self = this;
+	//TODO: Root is assumed to be first element. Change to use @targetNode
+	_.forEach(self.nodes,function(node){
+		node.laidOut = false;
+		node.transform = new Location(0,0,0,0,node.transform.id)
+	})
+	var start = self.nodes[Math.floor(Math.random() * self.nodes.length)];
+	start.laidOut = true;
+	var toCheckQueue = [];
+	var node = undefined;
+	var i = 0;
+	while(!_.isEmpty(toCheckQueue) || start )
+	{
+		i++
+		if(i > depth || i > 200)
+		{
+			toCheckQueue = [];
+			return
+		}
+		console.log("laying out at depth ",depth);
+		if(start)
+		{
+			node = start;
+			parent = start = transform = undefined;
+		}
+		else
+		{
+			var deq = toCheckQueue.shift()
+			node = self.workingSet.node(deq.w)
+			parent = self.workingSet.node(deq.v)
+			transform = self.workingSet.edge(deq)
+		}
+		if(parent && transform !== undefined && !node.laidOut)
+		{
+			node.transform = parent.transform
+			self.interpretTransform(parent,node,transform);
+			node.laidOut = true;
+			node.setDebugText(i+":"+self.decodeTransform(transform))
+		}
+		_.forEach(self.workingSet.outEdges(node.id), function(outEdge){
+			tgt = self.workingSet.node(outEdge.w)
+			if(!_.contains(toCheckQueue,outEdge) && !tgt.laidOut)
+			{
+				toCheckQueue.push(outEdge);
+			}
+		})
+	}
 }
 Nodebase.prototype.loadAssets = function(){
 	var self = this;
@@ -65,6 +118,13 @@ Nodebase.prototype.loadAssets = function(){
 }
 Nodebase.prototype.queryGameObjects = function(worldCoord){
 	var self = this;
+	var desDeep = Math.floor(((new Date).getTime() - self.instant)/100)
+	self.depth = self.depth?self.depth:3;
+	if(desDeep > self.depth && desDeep < 200)
+	{
+		self.layoutWorkingSet("foo",self.depth);
+		self.depth = desDeep;
+	}
 	return _.shuffle(self.nodes);//Make this instead a workingSet
 }
 
@@ -83,19 +143,17 @@ Nodebase.prototype.queryNear = function(nodelocation, meters){
 
 }
 
-//Adds a node to the dataset
+//Adds a node to the working set
 Nodebase.prototype.declareNode = function(node){
 	var self = this;
 	self.nodes.push(node);
+	self.workingSet.setNode(node.id,node);
 }
-//Adds a link to the dataset
+//Adds a link to the working set
 Nodebase.prototype.declareLink = function(nodeA,nodeB,transform){
 	var self = this;
-	var link = new WorldLink(nodeA,nodeB,transform)
-	nodeA.link(link);
-	nodeB.link(link);
-	self.links.push(link);
-	return link;
+	self.workingSet.setEdge(nodeB.id,nodeA.id,self.encodeTransform(transform))
+	self.workingSet.setEdge(nodeA.id,nodeB.id,self.invertTransform(self.encodeTransform(transform)))
 }
 /*
 	Converts codes into a a bitcode representing a transform
@@ -132,12 +190,15 @@ Nodebase.prototype.decodeTransform = function(num){
 }
 //Converts src->tgt transform code to be relative to the target (tgt->src)
 Nodebase.prototype.invertTransform = function(num){
-	return num >> 4 >0?~(num-16):(num >> 4 < 0?~num+16:~((num<<12) >>12)+16)
-}
-Nodebase.prototype.interpretTransform = function(srcNode,tgtNode,num){
-	var offset = num >> 4
+	var offset = num >> 4;
 	var srcSide = (num & 12) >> 2
 	var tgtSide = num & 3
+	return ((~offset + 1) << 4) | (tgtSide << 2) | srcSide
+}
+Nodebase.prototype.interpretTransform = function(srcNode,tgtNode,transformCode){
+	var offset = transformCode >> 4
+	var srcSide = (transformCode & 12) >> 2
+	var tgtSide = transformCode & 3
 
 	var L1 = srcNode.extent.w/2
 	var T1 = srcNode.extent.h/2
