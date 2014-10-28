@@ -1,3 +1,58 @@
+var _ = require("lodash");
+
+var NodeTransform = function(x,y,z,rot,uid){
+	var self = this;
+	if(x && _.isNumber(x.x))
+	{
+		self = _.extend(self,x)
+	}
+	else
+	{
+		self.x = x;
+		self.y = y;
+		self.z = z;
+		self.uid = uid;
+		self.rot = rot;
+	}
+}
+NodeTransform.prototype.getDistance = function(other, cubed){
+	var self = this;
+
+	//Same node: same coordinate space, so simple to compute
+	if(self.uid == other.uid){
+		var situ = Math.pow(self.x-other.x,2) + Math.pow(self.y-other.y,2) + Math.pow(self.z-other.z,2)
+		if(cubed) return situ
+		else return Math.pow(situ,1/3)
+	}
+	//Different nodes
+	else
+	{
+		return undefined;//TODO expand logic here to handle between-node distances
+	}
+}
+NodeTransform.prototype.add = function(x,y,z,rot,uid){
+	var self = this;
+	var result = new NodeTransform(self.x,self.y,self.z,self.rot);
+	var other;
+	if(x && _.isNumber(x.x))
+	{
+		other = x;
+	}
+	else
+	{
+		other = new NodeTransform(x,y,z,rot)
+	}
+	result.x += other.x;
+	result.y += other.y;
+	result.z += other.z;
+	result.rot = (result.rot + other.rot) % 360
+	result.uid = uid?uid:self.uid;
+	return result;
+}
+NodeTransform.prototype.sub = function(x,y,z,rot,uid){
+	return this.add(_.isNumber(x)?-x:x,_.isNumber(x)?-y:y,_.isNumber(x)?-z:z,-rot,uid);
+}
+
 /*
 	Converts codes into a a bitcode representing a transform
 
@@ -10,9 +65,7 @@
 		000000000011 11  00
 		   offset    src tgt   = 60
  */
- var NodeTransform = function(){
-
- }
+ 
 NodeTransform.encodeTransform = function(srcCode){
 	var a = srcCode[0];
 	var b = srcCode[1];

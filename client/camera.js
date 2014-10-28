@@ -55,7 +55,7 @@ Camera.prototype.doPan = function(dX,dY){
 Camera.prototype.update = function(){
 	var self = this;
 	self.queryVisibleWorld(self.pan);
-	self.gameScreen.position = self.pan
+	self.gameScreen.position = {x:self.viewSize.x/2,y:self.viewSize.y/2}//self.pan
 	self.gameScreen.scale = {x:self.zoom,y:self.zoom}
 }
 Camera.prototype.queryVisibleWorld = function(worldCoord){

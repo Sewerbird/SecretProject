@@ -1,16 +1,11 @@
 //worldgen.js
-var _ = require("lodash");
-var Location = require("./nodelocation.js");
-var NodeBase = require("./nodebase.js");
 var WorldNode = require("./worldnode.js");
-var WorldLink = require("./worldlink.js");
 
 var WorldGen = function(){
-	var self = this;
+
 }
 
-WorldGen.prototype.random = function(tgtNodebase){
-	var self = this;
+WorldGen.random = function(tgtNodebase){
 	var fullWorld = [];
 
 	var rows = 10;
