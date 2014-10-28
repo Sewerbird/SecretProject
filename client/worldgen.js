@@ -23,10 +23,15 @@ WorldGen.prototype.random = function(tgtNodebase){
 		tgtNodebase.declareNode(wn);
 		if(k % cols > 0)//link to left
 			tgtNodebase.declareLink(wn,fullWorld[k-1],"RL0");
-		if(k % cols == cols -1)//link to right for wrap around if furthest right
-			tgtNodebase.declareLink(wn,fullWorld[k-cols + 1],"LR0");
 		if(k >= cols)//link to above
 			tgtNodebase.declareLink(wn,fullWorld[(k-cols)],"BT0");
+
+		//make torus world
+		if(k % cols == cols - 1)//link to right for wrap around if furthest right
+			tgtNodebase.declareLink(wn,fullWorld[k - cols + 1],"LR0");
+		if(k >= (rows * cols) - cols)
+			tgtNodebase.declareLink(wn,fullWorld[k % cols],"BT0");
+
 		fullWorld[k] = wn
 	}
 }
