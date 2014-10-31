@@ -6,7 +6,7 @@ var Transform = require('./nodetransform.js')
 var WorkingSet = function(nodebase){
 	var self = this;
 
-	self.targetNode = "0"
+	self.targetNode = "foo-0"
 	self.frustrumSize = 10
 	self.nodebase = nodebase
 	self.workingGraph = new Graph({directed: true})
@@ -18,9 +18,10 @@ var WorkingSet = function(nodebase){
  */
 WorkingSet.prototype.update = function(){
 	var self = this
-	self.workingNodes = self.nodebase.queryNear(self.targetNode, self.frustrumSize).nodes
+	var received = self.nodebase.queryNear(self.targetNode, self.frustrumSize)
+	self.workingNodes = received.nodes//TODO: don't throw out baby with bathwater on update. Cache/Retain nodes.
 	_.forEach(self.workingNodes, function(node,k){
-		self.workingNodes[k] = GameObject(node,[
+		self.workingNodes[node.id] = GameObject(node,[
 			GameObject.Locatable({
 				position:{x:node.transform.x,y:node.transform.y}
 			}),
@@ -37,13 +38,20 @@ WorkingSet.prototype.update = function(){
 
 			})
 		])
-		self.workingGraph.setNode(k,self.workingNodes[k])
+		self.workingGraph.setNode(node.id,self.workingNodes[node.id])
 	})
+	_.forEach(received.links, function(edge,k){
+		if(!self.workingGraph.hasEdge(edge)){
+			//Add this non-existing edge
+			self.workingGraph.setEdge(edge.v,edge.w,edge.transform)
+		}
+	})
+	self.layout(10);
 }
 /*
 	Accumulate and apply transforms for the working set wrt the camera node
  */
-WorkingSet.prototype.layout = function(targetNode,depth){
+WorkingSet.prototype.layout = function(depth){
 	var self = this;
 	//TODO: Root is assumed to be first element. Change to use @targetNode
 
@@ -52,7 +60,7 @@ WorkingSet.prototype.layout = function(targetNode,depth){
 		node.transform = new Transform(0,0,0,0,node.transform.id)
 	})
 
-	var start = self.workingNodes[Math.floor(self.workingNodes.length / 2)];
+	var start = self.workingGraph.node(self.targetNode);
 	start.laidOut = true;
 	var toCheckQueue = [];
 	var node = undefined;
@@ -86,14 +94,14 @@ WorkingSet.prototype.layout = function(targetNode,depth){
 		}
 		_.forEach(self.workingGraph.outEdges(node.id), function(outEdge){
 			tgt = self.workingGraph.node(outEdge.w)
-			if(!_.contains(toCheckQueue,outEdge) && !tgt.laidOut)
+			if(!_.contains(toCheckQueue,outEdge) && tgt && !tgt.laidOut)
 			{
 				toCheckQueue.push(outEdge);
 			}
 		})
 	}
 }
-WorkingSet.prototype.queryGameObjects = function(worldCoord){
+WorkingSet.prototype.queryGameObjects = function(){
 	var self = this;
 
 	return self.workingNodes;

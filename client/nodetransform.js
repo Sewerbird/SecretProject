@@ -94,6 +94,11 @@ NodeTransform.invertTransform = function(num){
 	var tgtSide = num & 3
 	return ((~offset + 1) << 4) | (tgtSide << 2) | srcSide
 }
+NodeTransform.isRotationToSide = function(transformCode){
+	var srcSide = (transformCode & 12) >> 2
+	var tgtSide = transformCode & 3
+	return !((srcSide == tgtSide) || ((srcSide%2 == 0) == (tgtSide%2 == 0)))
+}
 NodeTransform.interpretTransform = function(srcNode,tgtNode,transformCode){
 	var offset = transformCode >> 4
 	var srcSide = (transformCode & 12) >> 2

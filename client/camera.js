@@ -6,7 +6,7 @@ var _ = require("lodash")
 var Camera = function(canvasID){
 	var self = this;
 	self.selected = undefined;
-	self.viewSize = {x:1200,y:600}
+	self.viewSize = {x:600,y:300}
 	self.pan = {x:150,y:150,minPanX:undefined,minPanY:undefined,maxPanX:undefined,maxPanY:undefined}
 	self.zoom = 0.05
 	self.maxZoom = 1.0
@@ -60,7 +60,7 @@ Camera.prototype.update = function(){
 }
 Camera.prototype.queryVisibleWorld = function(worldCoord){
 	var self = this;
-	self.oToRender = self.viewState.queryGameObjects(worldCoord);
+	self.oToRender = self.viewState.queryGameObjects();
 }
 Camera.prototype.drawVisibleWorld = function(){
 	var self = this;
@@ -79,7 +79,6 @@ Camera.prototype.setViewState = function(viewState){
 	self.gameScreen.interactive = true;
 	self.viewState = viewState;	
 	self.stage.addChild(self.gameScreen);
-	self.queryVisibleWorld(self.pan);
 
 	//Animate
 	requestAnimFrame(_.bind(self.drawVisibleWorld,this));

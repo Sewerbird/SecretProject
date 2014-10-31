@@ -12,18 +12,8 @@ var WorldNode = function(){
 	self.extent = {h:8,w:8};	//Extent (meters) on the horizontal 2d plane
 	self.transform = new Transform(0,0,0,0,self.id)	//Transform to apply to world node asset (typically rotation) in meters and degrees
 }
-
-WorldNode.prototype.instantiate = function(){
-	var self = this;
-
-	self.sprite = null; //TODO: load/reference a sprite with the right asset
-}
-
-WorldNode.prototype.link = function(link){
-	var self = this;
-
-	self.links.push(link);
-}
+//Returns a copy of the transform, which has presumably been laid out by the working set.
+//The coord returned is in meters measured from the workingset's targetNode's center, or default if not laid out.
 WorldNode.prototype.getWorldCoord = function(){
 	var self = this;
 	return _.clone(self.transform);
