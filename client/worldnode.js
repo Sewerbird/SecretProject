@@ -19,5 +19,11 @@ WorldNode.prototype.getWorldCoord = function(){
 	return _.clone(self.transform);
 }
 
+WorldNode.prototype.addGO = function(gameObject, options){
+	var self = this;
+	if(options == undefined){
+		self.goList.push(gameObject);
+	}
+}
 
 module.exports = WorldNode;

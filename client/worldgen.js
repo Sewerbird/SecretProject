@@ -1,5 +1,7 @@
 //worldgen.js
 var WorldNode = require("./worldnode.js");
+var GameObject = require("./gameobject.js");
+var Transform = require("./nodetransform.js");
 
 var WorldGen = function(){
 
@@ -29,5 +31,19 @@ WorldGen.random = function(tgtNodebase){
 
 		fullWorld[k] = wn
 	}
+	var test_denizen = new GameObject({},[
+			GameObject.Locatable({
+				transform : new Transform(3,1,3,0,"foo-0")
+			}),
+			GameObject.Drawable({
+				texture:tgtNodebase.assetMap['denizen'],
+				sprite:{
+					anchor:{x:0.5,y:0.5}
+				}
+			}),
+			GameObject.Selectable({}),
+			GameObject.Mobile({})
+		])
+	tgtNodebase.populateNode("foo-0",test_denizen);
 }
 module.exports = WorldGen

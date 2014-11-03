@@ -10,7 +10,8 @@ var WorkingSet = function(nodebase){
 	self.frustrumSize = 10
 	self.nodebase = nodebase
 	self.workingGraph = new Graph({directed: true})
-	self.workingNodes = []
+	self.workingNodes = {}
+	self.needsReset = true;
 }
 /*
 	Instantiates world nodes as renderable elements.
@@ -18,35 +19,49 @@ var WorkingSet = function(nodebase){
  */
 WorkingSet.prototype.update = function(){
 	var self = this
-	var received = self.nodebase.queryNear(self.targetNode, self.frustrumSize)
-	self.workingNodes = received.nodes//TODO: don't throw out baby with bathwater on update. Cache/Retain nodes.
-	_.forEach(self.workingNodes, function(node,k){
-		self.workingNodes[node.id] = GameObject(node,[
-			GameObject.Locatable({
-				position:{x:node.transform.x,y:node.transform.y}
-			}),
-			GameObject.Drawable({
-				texture:self.nodebase.assetMap[node.nodeRef],
-				sprite:{
-					anchor:{x:0.5,y:0.5}
-				}
-			}),
-			GameObject.Selectable({
+	if(self.needsReset)
+	{
+		var received = self.nodebase.queryNear(self.targetNode, self.frustrumSize)
+		self.workingNodes = received.nodes//TODO: don't throw out baby with bathwater on update. Cache/Retain nodes.
+		_.forEach(self.workingNodes, function(node,k){
+			self.workingNodes[node.id] = GameObject(node,[
+				GameObject.Locatable({
+					transform:node.transform
+				}),
+				GameObject.Drawable({
+					texture:self.nodebase.assetMap[node.nodeRef],
+					sprite:{
+						anchor:{x:0.5,y:0.5}
+					}
+				}),
+				GameObject.Selectable({
 
-			}),
-			GameObject.Debuggable({
+				}),
+				GameObject.Debuggable({
 
-			})
-		])
-		self.workingGraph.setNode(node.id,self.workingNodes[node.id])
-	})
-	_.forEach(received.links, function(edge,k){
-		if(!self.workingGraph.hasEdge(edge)){
-			//Add this non-existing edge
-			self.workingGraph.setEdge(edge.v,edge.w,edge.transform)
-		}
-	})
-	self.layout(10);
+				})
+			])
+			self.workingGraph.setNode(node.id,self.workingNodes[node.id])
+		})
+		_.forEach(received.links, function(edge,k){
+			if(!self.workingGraph.hasEdge(edge)){
+				//Add this non-existing edge
+				self.workingGraph.setEdge(edge.v,edge.w,edge.transform)
+			}
+		})
+		self.layout(10);
+		self.needsReset = false;
+	}
+	else{
+		_.forEach(self.workingNodes, function(node,k){
+			if(node.goList){
+				_.forEach(node.goList, function(go){
+					if(go.isMobile)
+						go.move();
+				})
+			}
+		})
+	}
 }
 /*
 	Accumulate and apply transforms for the working set wrt the camera node
@@ -89,8 +104,12 @@ WorkingSet.prototype.layout = function(depth){
 		{
 			node.transform = parent.transform
 			Transform.interpretTransform(parent,node,transform);
+			_.forEach(node.goList, function(go){
+				if(go.isLocatable)
+					go.transform = node.transform.add(go.transform);
+			})
 			node.laidOut = true;
-			node.setDebugText(i+":"+Transform.decodeTransform(transform))
+			//node.setDebugText(i+":"+Transform.decodeTransform(transform))
 		}
 		_.forEach(self.workingGraph.outEdges(node.id), function(outEdge){
 			tgt = self.workingGraph.node(outEdge.w)

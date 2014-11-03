@@ -6,7 +6,7 @@ var _ = require("lodash")
 var Camera = function(canvasID){
 	var self = this;
 	self.selected = undefined;
-	self.viewSize = {x:600,y:300}
+	self.viewSize = {x:800,y:400}
 	self.pan = {x:150,y:150,minPanX:undefined,minPanY:undefined,maxPanX:undefined,maxPanY:undefined}
 	self.zoom = 0.05
 	self.maxZoom = 1.0
@@ -51,7 +51,7 @@ Camera.prototype.doPan = function(dX,dY){
 	var self = this;
 	self.pan.x -= dX;
 	self.pan.y -= dY;
-}
+} 
 Camera.prototype.update = function(){
 	var self = this;
 	self.queryVisibleWorld(self.pan);
