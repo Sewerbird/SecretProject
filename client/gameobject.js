@@ -4,6 +4,7 @@ var PIXI = require("./lib/pixi.js")
 
 var GameObject = function(init, modules){
 	if(!modules) modules = [Locatable]
+	if(!init) init = {}
 	_.forEach(modules, function(module){
 		init = module(init)
 	})
@@ -88,8 +89,8 @@ GameObject.Selectable = function(settings){
 				gameObject.isSelected = true;
 			}
 		}
-		gameObject.onSelect = gameObject.onSelect?gameObject.onSelect:(settings.onSelect?settings.onSelect:function(){})
-		gameObject.onDeselect = gameObject.onDeselect?gameObject.onDeselect:(settings.onDeselect?settings.onDeselect:function(){})
+		gameObject.onSelect = gameObject.onSelect?gameObject.onSelect:(settings && settings.onSelect?settings.onSelect:function(){})
+		gameObject.onDeselect = gameObject.onDeselect?gameObject.onDeselect:(settings && settings.onDeselect?settings.onDeselect:function(){})
 		return gameObject
 	}
 }
@@ -109,15 +110,25 @@ GameObject.Mobile = function(settings){
 	return function(gameObject){
 		if(!gameObject.isLocatable) throw "Debuggable must be Locatable first";
 		gameObject.isMobile = true;
+		gameObject.hasExitedNode = function(){
+			var node = foo.get(gameObject.transform.uid); //TODO: actually do this...
+			console.log("HAS EXITED NODE");
+			return !node.containsPoint(gameObject.transform)
+		}
+		gameObject.transitionNode = function(){return false}
 		gameObject.move = function(x,y){
 			gameObject.transform.x += 0.5 * (Math.random() - 0.5)
 			gameObject.transform.y += 0.5 * (Math.random() - 0.5)
+			if(gameObject.hasExitedNode())
+				gameObject.transitionNode()
 		}
 		return gameObject;
 	}
 }
-GameObject.KeyboardResponsive = function(settings){
+GameObject.MovesViaKeyboard = function(settings){
 	return function(gameObject){
+		if(!gameObject.isMobile) throw "MovesViaKeyboard must be Mobile first";
+		gameObject.movesViaKeyboard = true;
 		return gameObject;
 	}
 }

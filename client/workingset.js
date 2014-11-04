@@ -3,10 +3,14 @@ var Graph = require('graphlib').Graph
 var GameObject = require('./gameobject.js')
 var Transform = require('./nodetransform.js')
 
-var WorkingSet = function(nodebase){
+var WorkingSet = function(target, nodebase){
 	var self = this;
 
-	self.targetNode = "foo-0"
+	self.target = target;
+	if(target.isLocatable)
+		self.targetNode = target.transform.uid;
+	else
+		self.targetNode = "foo-0"
 	self.frustrumSize = 10
 	self.nodebase = nodebase
 	self.workingGraph = new Graph({directed: true})
@@ -34,12 +38,8 @@ WorkingSet.prototype.update = function(){
 						anchor:{x:0.5,y:0.5}
 					}
 				}),
-				GameObject.Selectable({
-
-				}),
-				GameObject.Debuggable({
-
-				})
+				GameObject.Selectable(),
+				GameObject.Debuggable()
 			])
 			self.workingGraph.setNode(node.id,self.workingNodes[node.id])
 		})

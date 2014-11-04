@@ -18,7 +18,17 @@ WorldNode.prototype.getWorldCoord = function(){
 	var self = this;
 	return _.clone(self.transform);
 }
-
+WorldNode.prototype.containsPoint = function(transform){
+	var self = this;
+	if(transform.uid == self.id)
+	{
+	//TODO: make robust under rotation
+		if(transform.x < self.extent.w/2 && transform.x > -self.extent.w/2 &&
+			transform.y < self.extent.h/2 && transform.y > -self.extent.h/2)
+			return true;
+	}
+	return false
+}
 WorldNode.prototype.addGO = function(gameObject, options){
 	var self = this;
 	if(options == undefined){

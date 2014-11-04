@@ -40,15 +40,15 @@ Nodebase.prototype.queryID = function(uid){
 //Returns an array of WorldNode uids and all links outbound
 Nodebase.prototype.queryNear = function(targetUID, meters){
 	var self = this;
-
 	var result_nodes = {};
 	var result_links = [];
-
+	var tgtNode = self.wholeWorld.node(targetUID)
 	/*
+
 		result_nodes : all nodes within @meters of the center of the targetted node
 		result_links : all links of the result_nodes, even if they lead to unreturned nodes
+
 	 */
-	var tgtNode = self.wholeWorld.node(targetUID)
 	if(tgtNode){
 		result_nodes[targetUID] = tgtNode;
 		var toExplore = _.map(self.wholeWorld.outEdges(targetUID), function(edge){

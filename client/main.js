@@ -17,7 +17,7 @@ Main.prototype.start = function(){
 	var self = this;
 	console.log("Main Started ");
 	//Set up a player
-	self.workingset = new WorkingSet(self.nodebase)
+	self.workingset = new WorkingSet("player0", self.nodebase)
 	setInterval(_.bind(self.workingset.update,self.workingset), 1000)
 	self.camera.setViewState(self.workingset)//TODO: plug in an actual viewState here
 }

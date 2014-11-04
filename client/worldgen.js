@@ -31,7 +31,7 @@ WorldGen.random = function(tgtNodebase){
 
 		fullWorld[k] = wn
 	}
-	var test_denizen = new GameObject({},[
+	var test_denizen = new GameObject({id:"player0"},[
 			GameObject.Locatable({
 				transform : new Transform(3,1,3,0,"foo-0")
 			}),
@@ -41,8 +41,8 @@ WorldGen.random = function(tgtNodebase){
 					anchor:{x:0.5,y:0.5}
 				}
 			}),
-			GameObject.Selectable({}),
-			GameObject.Mobile({})
+			GameObject.Selectable(),
+			GameObject.Mobile()
 		])
 	tgtNodebase.populateNode("foo-0",test_denizen);
 }
