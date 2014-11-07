@@ -20,9 +20,7 @@ var Nodebase = function(){
 Nodebase.prototype.loadAssets = function(){
 	var self = this;
 	var assetKeys = [
-		'testNode8x8',
-		'water_floor01',
-		'grass_floor01',
+		'scene1',
 		'denizen'
 	]
 	self.assetMap = {};

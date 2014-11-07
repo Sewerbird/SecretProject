@@ -34,8 +34,9 @@ NodeTransform.prototype.add = function(x,y,z,rot,uid){
 	var self = this;
 	var result = new NodeTransform(self.x,self.y,self.z,self.rot);
 	var other;
-	if(x && _.isNumber(x.x))
+	if(x !== undefined && _.isNumber(x.x))
 	{
+		console.log("ADDING",result,other)
 		other = x;
 	}
 	else
@@ -45,12 +46,18 @@ NodeTransform.prototype.add = function(x,y,z,rot,uid){
 	result.x += other.x;
 	result.y += other.y;
 	result.z += other.z;
-	result.rot = (result.rot + other.rot) % 360
+	//result.rot = (result.rot + other.rot) % 360
 	result.uid = uid?uid:self.uid;
 	return result;
 }
 NodeTransform.prototype.sub = function(x,y,z,rot,uid){
-	return this.add(_.isNumber(x)?-x:x,_.isNumber(x)?-y:y,_.isNumber(x)?-z:z,-rot,uid);
+	if(x !== undefined && !_.isNumber(x))
+	{
+		var toSubtract = new NodeTransform(-x.x,-x.y,-x.z,-x.rot,x.uid)
+	}
+	else
+		var toSubtract = new NodeTransform(-x,-y,-z,-rot,uid);
+	return this.add(toSubtract);
 }
 
 /*

@@ -20,13 +20,13 @@ WorldNode.prototype.getWorldCoord = function(){
 }
 WorldNode.prototype.containsPoint = function(transform){
 	var self = this;
-	if(transform.uid == self.id)
-	{
+	//if(transform.uid == self.id)
+	//{
 	//TODO: make robust under rotation
-		if(transform.x < self.extent.w/2 && transform.x > -self.extent.w/2 &&
-			transform.y < self.extent.h/2 && transform.y > -self.extent.h/2)
+		if(transform.x < self.extent.w/2 + self.transform.x && transform.x > -self.extent.w/2 + self.transform.x &&
+			transform.y < self.extent.h/2 + self.transform.y && transform.y > -self.extent.h/2 + self.transform.y)
 			return true;
-	}
+	//}
 	return false
 }
 WorldNode.prototype.addGO = function(gameObject, options){
@@ -34,6 +34,10 @@ WorldNode.prototype.addGO = function(gameObject, options){
 	if(options == undefined){
 		self.goList.push(gameObject);
 	}
+}
+WorldNode.prototype.removeGO = function(gameObject){
+	var self = this;
+	self.goList = _.without(self.goList,gameObject);
 }
 
 module.exports = WorldNode;

@@ -67,7 +67,7 @@ Camera.prototype.drawVisibleWorld = function(){
 	requestAnimFrame(_.bind(self.drawVisibleWorld,this))
 	_.forEach(self.oToRender, function(child){
 		if(child && child.draw)
-			child.draw(self.gameScreen);
+			child.draw(self.gameScreen, 0, 0);
 	})
 	self.renderer.render(self.stage);
 }

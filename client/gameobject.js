@@ -29,6 +29,9 @@ GameObject.Drawable = function(settings){
 		gameObject.ownedSprites = settings.ownedSprites;
 		gameObject.sprite = new PIXI.Sprite(settings.texture);
 		_.extend(gameObject.sprite, settings.sprite);
+		gameObject.cache = function(){
+			gameObject.sprite.parent.removeChild(gameObject.sprite);
+		}
 		gameObject.instate = function(drawTo){
 			if(gameObject.isDrawableInstated || !drawTo)
 				return;
@@ -41,17 +44,17 @@ GameObject.Drawable = function(settings){
 			}
 			gameObject.isDrawableInstated = true;
 		}
-		gameObject.draw = function(drawTo){
+		gameObject.draw = function(drawTo, xOffset, yOffset){
 			if(!gameObject.isDrawableInstated) 
 				gameObject.instate(drawTo)
 			var inbetween = gameObject.getLocalCoord();
 			//Translate worldCoord to screenspace
-			gameObject.sprite.position = {x:inbetween.x * 64,y:inbetween.y * 64}
+			gameObject.sprite.position = {x:inbetween.x * 64+xOffset,y:inbetween.y * 64, z:inbetween.z}
 			gameObject.sprite.rotation = inbetween.rot!==undefined?inbetween.rot * Math.PI / 180:Math.PI/5*Math.random()
 			if(gameObject.goList)
 			{
 				_.forEach(gameObject.goList, function(go){
-					go.sprite.position = {x: go.transform.x * 64, y:go.transform.y * 64}
+					go.sprite.position = {x: go.transform.x * 64, y:go.transform.y * 64, z:go.transform.z}
 				})
 			}
 		}
@@ -98,7 +101,7 @@ GameObject.Selectable = function(settings){
 GameObject.Debuggable = function(settings){
 	return function(gameObject){
 		if(!gameObject.isDrawable) throw "Debuggable must be Drawable first";
-		gameObject.debugText = new PIXI.Text("",{font:"120px Arial", fill:"cyan"})
+		gameObject.debugText = new PIXI.Text(gameObject.id,{font:"120px Arial", fill:"cyan"})
 		gameObject.sprite.addChild(gameObject.debugText)
 		gameObject.setDebugText = function(text){
 			gameObject.debugText.setText(text)
@@ -117,10 +120,10 @@ GameObject.Mobile = function(settings){
 		}
 		gameObject.transitionNode = function(){return false}
 		gameObject.move = function(x,y){
-			gameObject.transform.x += 0.5 * (Math.random() - 0.5)
-			gameObject.transform.y += 0.5 * (Math.random() - 0.5)
-			if(gameObject.hasExitedNode())
-				gameObject.transitionNode()
+			//gameObject.transform.x += 0.51 * (Math.random())
+			//gameObject.transform.y += 1 * (Math.random())
+			//if(gameObject.hasExitedNode())
+			//		gameObject.transitionNode()
 		}
 		return gameObject;
 	}

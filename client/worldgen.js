@@ -6,7 +6,28 @@ var Transform = require("./nodetransform.js");
 var WorldGen = function(){
 
 }
+WorldGen.single = function(tgtNodebase){
+	var fullWorld = [];
 
+	var wn = new WorldNode();
+	wn.id = "foo-0";
+	wn.nodeRef = "scene1"
+	tgtNodebase.declareNode(wn);
+	var test_denizen = new GameObject({id:"player0"},[
+			GameObject.Locatable({
+				transform : new Transform(-3,1,3,0,"foo-0")
+			}),
+			GameObject.Drawable({
+				texture:tgtNodebase.assetMap['denizen'],
+				sprite:{
+					anchor:{x:0.5,y:0.5}
+				}
+			}),
+			GameObject.Selectable(),
+			GameObject.Mobile()
+		])
+	tgtNodebase.populateNode("foo-0",test_denizen);
+}
 WorldGen.random = function(tgtNodebase){
 	var fullWorld = [];
 
@@ -33,7 +54,7 @@ WorldGen.random = function(tgtNodebase){
 	}
 	var test_denizen = new GameObject({id:"player0"},[
 			GameObject.Locatable({
-				transform : new Transform(3,1,3,0,"foo-0")
+				transform : new Transform(-3,1,3,0,"foo-0")
 			}),
 			GameObject.Drawable({
 				texture:tgtNodebase.assetMap['denizen'],

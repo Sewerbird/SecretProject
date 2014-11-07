@@ -11,6 +11,7 @@ var WorkingSet = function(target, nodebase){
 		self.targetNode = target.transform.uid;
 	else
 		self.targetNode = "foo-0"
+
 	self.frustrumSize = 10
 	self.nodebase = nodebase
 	self.workingGraph = new Graph({directed: true})
@@ -25,6 +26,9 @@ WorkingSet.prototype.update = function(){
 	var self = this
 	if(self.needsReset)
 	{
+		//_.forEach(self.workingNodes,function(node){
+		//	node.cache()
+		//})
 		var received = self.nodebase.queryNear(self.targetNode, self.frustrumSize)
 		self.workingNodes = received.nodes//TODO: don't throw out baby with bathwater on update. Cache/Retain nodes.
 		_.forEach(self.workingNodes, function(node,k){
@@ -58,6 +62,25 @@ WorkingSet.prototype.update = function(){
 				_.forEach(node.goList, function(go){
 					if(go.isMobile)
 						go.move();
+					if(node.containsPoint(go.transform))
+						console.log("INSIDE OF ",node.id);
+					else
+					{
+						_.forEach(self.workingNodes, function(nodeToCheck){
+							if(nodeToCheck.containsPoint(go.transform))
+							{
+								node.removeGO(go);
+								go.transform = go.transform.sub(nodeToCheck.transform);
+								go.transform.uid = nodeToCheck.id;
+								nodeToCheck.addGO(go);
+								self.targetNode = nodeToCheck.id
+								self.needsReset = true;
+								self.update();
+								self.layout(10)
+								console.log("INSIDE OF",nodeToCheck.id);
+							}
+						})
+					}
 				})
 			}
 		})
