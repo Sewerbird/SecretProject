@@ -1,6 +1,9 @@
 var PIXI = require("./lib/pixi.js")
 var _ = require("lodash")
 
+//Viewstate that camera monitors must implement a 'queryGameObjects()' function that returns an array of objects
+//that have 'draw(pixiReference)' functions to draw themselves with to a PIXI.DisplayObjectContainer
+
 //Morphs attributes of a DisplayObjectContainer in response to user mouse movements to pan/zoom the visible stage
 //Effectively peers into @main, maintains a viewable region, and draws to @elementID canvas
 var Camera = function(canvasID){
@@ -54,13 +57,9 @@ Camera.prototype.doPan = function(dX,dY){
 } 
 Camera.prototype.update = function(){
 	var self = this;
-	self.queryVisibleWorld(self.pan);
+	self.oToRender = self.viewState.queryGameObjects();
 	self.gameScreen.position = {x:self.viewSize.x/2,y:self.viewSize.y/2}//self.pan
 	self.gameScreen.scale = {x:self.zoom,y:self.zoom}
-}
-Camera.prototype.queryVisibleWorld = function(worldCoord){
-	var self = this;
-	self.oToRender = self.viewState.queryGameObjects();
 }
 Camera.prototype.drawVisibleWorld = function(){
 	var self = this;

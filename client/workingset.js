@@ -3,6 +3,7 @@ var Graph = require('graphlib').Graph
 var GameObject = require('./gameobject.js')
 var Transform = require('./nodetransform.js')
 
+//The Working Set is the logical set of 'loaded' elements available for simulation and display
 var WorkingSet = function(target, nodebase){
 	var self = this;
 

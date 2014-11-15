@@ -8,6 +8,8 @@ var WorldNode = require("./worldnode.js");
 var PIXI = require("./lib/pixi.js")
 var GameObject = require("./gameobject.js");
 
+//Nodebase is responsible for maintaining a list of an entire world state and marshalling
+//the assets and queries needed to access/mutate them.
 var Nodebase = function(){
 	var self = this;
 	self.instant = (new Date()).getTime()
